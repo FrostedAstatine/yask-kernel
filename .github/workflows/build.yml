@@ -1,13 +1,10 @@
 name: Build Kernel
-on:
-  workflow_dispatch:
+on: workflow_dispatch
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      
+    - uses: actions/checkout@v4
     - name: Build
       run: |
         sudo apt update
@@ -16,22 +13,7 @@ jobs:
         export CROSS_COMPILE=aarch64-linux-gnu-
         make vendor/topaz_GKI.config
         make -j$(nproc) Image.gz
-        
-    - name: Find and upload
-      run: |
-        # Find the kernel image anywhere
-        KERNEL=$(find . -name "Image.gz" -type f | head -1)
-        if [ -n "$KERNEL" ]; then
-          echo "Found kernel at: $KERNEL"
-          cp "$KERNEL" kernel-image.gz
-        else
-          echo "ERROR: Kernel image not found!"
-          find . -name "Image*" -o -name "vmlinux*" | head -20
-          exit 1
-        fi
-        
-    - name: Upload
-      uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v4
       with:
-        name: kernel-image
-        path: kernel-image.gz
+        name: kernel
+        path: arch/arm64/boot/Image.gz
