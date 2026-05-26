@@ -17,22 +17,20 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y bc bison flex libssl-dev libelf-dev
+        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r584948b.tar.gz
+        mkdir -p clang
+        tar -xzf clang-r584948b.tar.gz -C clang
+        echo "$PWD/clang/bin" >> $GITHUB_PATH
         
     - name: Build kernel
       run: |
-        export PATH="/usr/lib/llvm-14/bin:$PATH"
-        make ARCH=arm64 vendor/bengal_GKI.config
-        make ARCH=arm64 -j$(nproc) CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip
-        
-    - name: Prepare AnyKernel3
-      run: |
-        git clone --depth 1 https://github.com/osm0sis/AnyKernel3 -b master
-        cp arch/arm64/boot/Image.gz AnyKernel3/
-        cd AnyKernel3
-        zip -r9 ../kernel.zip *
+        export ARCH=arm64
+        export SUBARCH=arm64
+        make vendor/bengal_GKI.config
+        make -j$(nproc)
         
     - name: Upload kernel
       uses: actions/upload-artifact@v4
       with:
-        name: yask-kernel
-        path: kernel.zip
+        name: Image
+        path: arch/arm64/boot/Image.gz
