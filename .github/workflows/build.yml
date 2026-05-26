@@ -13,17 +13,29 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@v4
       
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y git make bc bison flex libssl-dev libelf-dev wget
+        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r584948b.tar.gz
+        mkdir -p clang
+        tar -xzf clang-r584948b.tar.gz -C clang
+        echo "$PWD/clang/bin" >> $GITHUB_PATH
+        
     - name: Build kernel
-      uses: fabianonline/kernel_build_action@v1
-      with:
-          kernel-config: vendor/bengal_GKI.config
-          kernel-dir: .
-          arch: arm64
-          compiler: clang
-          anykernel3: true
-          
+      run: |
+        make ARCH=arm64 vendor/bengal_GKI.config
+        make ARCH=arm64 -j$(nproc)
+        
+    - name: Prepare AnyKernel3
+      run: |
+        git clone --depth 1 https://github.com/osm0sis/AnyKernel3 -b master
+        cp arch/arm64/boot/Image.gz AnyKernel3/
+        cd AnyKernel3
+        zip -r9 ../kernel.zip *
+        
     - name: Upload kernel
       uses: actions/upload-artifact@v4
       with:
         name: yask-kernel
-        path: AnyKernel3/*.zip
+        path: kernel.zip
