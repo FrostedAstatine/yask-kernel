@@ -14,12 +14,24 @@ jobs:
         sudo apt install -y bc bison flex libssl-dev libelf-dev gcc-aarch64-linux-gnu
         export ARCH=arm64
         export CROSS_COMPILE=aarch64-linux-gnu-
-        # Try different configs
-        make vendor/topaz_GKI.config || make vendor/bengal_le_GKI.config || make vendor/bengal_GKI.config
-        make -j$(nproc)
+        make vendor/topaz_GKI.config
+        make -j$(nproc) Image.gz
+        
+    - name: Find and upload
+      run: |
+        # Find the kernel image anywhere
+        KERNEL=$(find . -name "Image.gz" -type f | head -1)
+        if [ -n "$KERNEL" ]; then
+          echo "Found kernel at: $KERNEL"
+          cp "$KERNEL" kernel-image.gz
+        else
+          echo "ERROR: Kernel image not found!"
+          find . -name "Image*" -o -name "vmlinux*" | head -20
+          exit 1
+        fi
         
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: kernel
-        path: arch/arm64/boot/Image.gz
+        name: kernel-image
+        path: kernel-image.gz
