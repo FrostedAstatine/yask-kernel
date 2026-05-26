@@ -17,17 +17,14 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y bc bison flex libssl-dev libelf-dev
-        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r584948b.tar.gz
-        mkdir -p clang
-        tar -xzf clang-r584948b.tar.gz -C clang
-        echo "$PWD/clang/bin" >> $GITHUB_PATH
         
     - name: Build kernel
       run: |
         export ARCH=arm64
         export SUBARCH=arm64
+        export PATH="/usr/lib/llvm-14/bin:$PATH"
         make vendor/bengal_GKI.config
-        make -j$(nproc)
+        make -j$(nproc) CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip
         
     - name: Upload kernel
       uses: actions/upload-artifact@v4
