@@ -1,0 +1,25 @@
+name: Test Config Only
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Test config
+      run: |
+        sudo apt update
+        sudo apt install -y bc bison flex libssl-dev libelf-dev gcc-aarch64-linux-gnu
+        export ARCH=arm64
+        export CROSS_COMPILE=aarch64-linux-gnu-
+        make vendor/topaz_GKI.config 2>&1 | tee config.log
+        echo "=== CONFIG RESULT ==="
+        cat config.log | tail -20
+        
+    - name: Upload result
+      uses: actions/upload-artifact@v4
+      with:
+        name: config-test
+        path: config.log
