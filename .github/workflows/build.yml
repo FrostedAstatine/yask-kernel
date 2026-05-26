@@ -14,7 +14,8 @@ jobs:
         sudo apt install -y bc bison flex libssl-dev libelf-dev gcc-aarch64-linux-gnu
         export ARCH=arm64
         export CROSS_COMPILE=aarch64-linux-gnu-
-        make vendor/bengal_GKI.config
+        # Try different configs
+        make vendor/topaz_GKI.config || make vendor/bengal_le_GKI.config || make vendor/bengal_GKI.config
         make -j$(nproc)
         
     - name: Upload
