@@ -1,0 +1,29 @@
+name: Build YASK Kernel
+on:
+  workflow_dispatch:
+    inputs:
+      kernelDevice:
+        description: 'Device codename'
+        required: true
+        default: 'sapphire'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+      
+    - name: Build kernel
+      uses: thedroiddiv/kernel_build_action@v1
+      with:
+          kernel-config: vendor/bengal_GKI.config
+          kernel-dir: .
+          arch: arm64
+          compiler: clang
+          anykernel3: true
+          
+    - name: Upload kernel
+      uses: actions/upload-artifact@v4
+      with:
+        name: yask-kernel
+        path: AnyKernel3/*.zip
