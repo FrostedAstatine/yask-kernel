@@ -1,0 +1,19 @@
+name: Kernel Build
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: |
+        sudo apt update
+        sudo apt install -y bc bison flex libssl-dev libelf-dev gcc-aarch64-linux-gnu
+        export ARCH=arm64
+        export CROSS_COMPILE=aarch64-linux-gnu-
+        make vendor/topaz_GKI.config
+        make -j$(nproc) Image.gz
+    - uses: actions/upload-artifact@v4
+      with:
+        name: kernel
+        path: arch/arm64/boot/Image.gz
