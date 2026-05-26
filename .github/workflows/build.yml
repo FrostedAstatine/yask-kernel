@@ -25,18 +25,25 @@ jobs:
         export SUBARCH=arm64
         export PATH="/usr/lib/llvm-14/bin:$PATH"
         make vendor/bengal_GKI.config
-        make -j$(nproc) CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip 2>&1 | tee build.log
+        make -j$(nproc) CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip
         
-    - name: Upload logs
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-logs
-        path: build.log
+    - name: List build artifacts
+      run: |
+        echo "Looking for kernel image..."
+        find . -name "Image*" -o -name "vmlinux*" | head -20
+        echo ""
+        echo "Checking arch/arm64/boot:"
+        ls -la arch/arm64/boot/ 2>/dev/null || echo "Directory not found"
+        echo ""
+        echo "Checking out directory:"
+        ls -la out/arch/arm64/boot/ 2>/dev/null || echo "Directory not found"
         
     - name: Upload kernel
-      if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: Image
-        path: arch/arm64/boot/Image.gz
+        name: build-artifacts
+        path: |
+          arch/arm64/boot/Image.gz
+          out/arch/arm64/boot/Image.gz
+          arch/arm64/boot/Image
+          out/arch/arm64/boot/Image
